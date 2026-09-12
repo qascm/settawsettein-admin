@@ -2,10 +2,33 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+function parseSheetDate(date) {
+  if (!date) return null;
+
+  const parts = String(date).split("/");
+
+  if (parts.length === 3) {
+    const [day, month, year] = parts;
+
+    const parsed = new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day)
+    );
+
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  const parsed = new Date(date);
+
+  return isNaN(parsed.getTime()) ? null : parsed;
+}
+
 export default function SalesOverview() {
   const [chartData, setChartData] = useState([]);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [animateBars, setAnimateBars] = useState(false);
 
   useEffect(() => {
     async function loadSales() {
@@ -14,12 +37,8 @@ export default function SalesOverview() {
 
         const [ordersResponse, expensesResponse] =
           await Promise.all([
-            fetch("/api/orders", {
-              cache: "no-store",
-            }),
-            fetch("/api/expenses", {
-              cache: "no-store",
-            }),
+            fetch("/api/orders", { cache: "no-store" }),
+            fetch("/api/expenses", { cache: "no-store" }),
           ]);
 
         const ordersResult = await ordersResponse.json();
@@ -37,23 +56,11 @@ export default function SalesOverview() {
           );
         }
 
-        // ----------------------------------------
-        // ORDERS
-        // ----------------------------------------
-
         const orders = (ordersResult.orders || []).filter(
           (order) => order.status !== "Cancelled"
         );
 
-        // ----------------------------------------
-        // EXPENSES
-        // ----------------------------------------
-
         const expenses = expensesResult.expenses || [];
-
-        // ----------------------------------------
-        // LAST 6 MONTHS
-        // ----------------------------------------
 
         const months = [];
 
@@ -75,14 +82,10 @@ export default function SalesOverview() {
           });
         }
 
-        // ----------------------------------------
-        // ADD REVENUE
-        // ----------------------------------------
-
         orders.forEach((order) => {
-          const date = new Date(order.date);
+          const date = parseSheetDate(order.date);
 
-          if (isNaN(date.getTime())) return;
+          if (!date) return;
 
           const month = months.find(
             (item) =>
@@ -95,14 +98,10 @@ export default function SalesOverview() {
           }
         });
 
-        // ----------------------------------------
-        // ADD EXPENSES
-        // ----------------------------------------
-
         expenses.forEach((expense) => {
-          const date = new Date(expense.date);
+          const date = parseSheetDate(expense.date);
 
-          if (isNaN(date.getTime())) return;
+          if (!date) return;
 
           const month = months.find(
             (item) =>
@@ -115,11 +114,6 @@ export default function SalesOverview() {
           }
         });
 
-        // ----------------------------------------
-        // TOTAL REVENUE
-        // Only the displayed 6-month period
-        // ----------------------------------------
-
         const sixMonthRevenue = months.reduce(
           (sum, month) => sum + month.revenue,
           0
@@ -127,6 +121,10 @@ export default function SalesOverview() {
 
         setChartData(months);
         setTotalRevenue(sixMonthRevenue);
+
+        setTimeout(() => {
+          setAnimateBars(true);
+        }, 100);
       } catch (error) {
         console.error(
           "LOAD SALES OVERVIEW ERROR:",
@@ -143,10 +141,6 @@ export default function SalesOverview() {
     loadSales();
   }, []);
 
-  // ----------------------------------------
-  // CHART SCALE
-  // ----------------------------------------
-
   const maxValue = useMemo(() => {
     if (!chartData.length) return 1000;
 
@@ -159,15 +153,6 @@ export default function SalesOverview() {
     );
   }, [chartData]);
 
-  /*
-    Keep the chart clean with rounded numbers.
-
-    Example:
-    2,480 -> 3,000
-    7,200 -> 10,000
-    12,000 -> 20,000
-  */
-
   const chartMax = useMemo(() => {
     if (maxValue <= 3000) return 3000;
     if (maxValue <= 5000) return 5000;
@@ -179,10 +164,6 @@ export default function SalesOverview() {
     return Math.ceil(maxValue / 5000) * 5000;
   }, [maxValue]);
 
-  // ----------------------------------------
-  // GRID LABELS
-  // ----------------------------------------
-
   const gridValues = useMemo(() => {
     return [
       chartMax,
@@ -191,10 +172,6 @@ export default function SalesOverview() {
       0,
     ];
   }, [chartMax]);
-
-  // ----------------------------------------
-  // FORMAT CURRENCY
-  // ----------------------------------------
 
   const formatCurrency = (value) => {
     return Number(value || 0).toLocaleString("en-US");
@@ -210,10 +187,6 @@ export default function SalesOverview() {
           p-5
         "
       >
-        {/* ======================================
-            HEADER
-        ====================================== */}
-
         <div className="flex items-start justify-between">
           <div>
             <p className="text-sm text-[var(--muted)]">
@@ -238,33 +211,25 @@ export default function SalesOverview() {
               py-2
               text-xs
               whitespace-nowrap
-              transition
+              transition-all
+              duration-200
               hover:opacity-80
+              active:scale-95
             "
           >
             <span>Last 6 months</span>
           </button>
         </div>
 
-        {/* ======================================
-            CHART
-        ====================================== */}
-
         {loading ? (
           <div className="h-56 flex items-center justify-center">
-            <p className="text-sm text-[var(--muted)]">
+            <p className="text-sm text-[var(--muted)] animate-pulse">
               Loading...
             </p>
           </div>
         ) : (
           <div className="mt-7">
-            {/* Chart area */}
-
             <div className="relative h-48">
-              {/* ----------------------------------
-                  GRID LINES
-              ---------------------------------- */}
-
               {gridValues.map((value, index) => {
                 const position =
                   value === 0
@@ -297,17 +262,11 @@ export default function SalesOverview() {
                     >
                       {value === 0
                         ? "0"
-                        : `${Math.round(
-                            value / 1000
-                          )}K`}
+                        : `${Math.round(value / 1000)}K`}
                     </span>
                   </div>
                 );
               })}
-
-              {/* ----------------------------------
-                  BARS
-              ---------------------------------- */}
 
               <div
                 className="
@@ -320,7 +279,7 @@ export default function SalesOverview() {
                   justify-between
                 "
               >
-                {chartData.map((item) => {
+                {chartData.map((item, index) => {
                   const revenueHeight =
                     chartMax > 0
                       ? (item.revenue / chartMax) * 100
@@ -344,8 +303,6 @@ export default function SalesOverview() {
                         min-w-0
                       "
                     >
-                      {/* Revenue */}
-
                       <div
                         title={`Revenue: EGP ${formatCurrency(
                           item.revenue
@@ -356,22 +313,24 @@ export default function SalesOverview() {
                           rounded-t-lg
                           bg-[var(--primary)]
                           opacity-90
+                          origin-bottom
                           transition-all
-                          duration-300
+                          duration-700
+                          ease-out
                           hover:opacity-100
+                          hover:scale-x-105
                         "
                         style={{
                           height:
-                            item.revenue > 0
+                            animateBars && item.revenue > 0
                               ? `${Math.max(
                                   revenueHeight,
                                   1
                                 )}%`
                               : "0%",
+                          transitionDelay: `${index * 60}ms`,
                         }}
                       />
-
-                      {/* Expenses */}
 
                       <div
                         title={`Expenses: EGP ${formatCurrency(
@@ -383,18 +342,22 @@ export default function SalesOverview() {
                           rounded-t-lg
                           bg-gray-500
                           opacity-80
+                          origin-bottom
                           transition-all
-                          duration-300
+                          duration-700
+                          ease-out
                           hover:opacity-100
+                          hover:scale-x-105
                         "
                         style={{
                           height:
-                            item.expense > 0
+                            animateBars && item.expense > 0
                               ? `${Math.max(
                                   expenseHeight,
                                   1
                                 )}%`
                               : "0%",
+                          transitionDelay: `${index * 60 + 30}ms`,
                         }}
                       />
                     </div>
@@ -402,10 +365,6 @@ export default function SalesOverview() {
                 })}
               </div>
             </div>
-
-            {/* ----------------------------------
-                MONTH LABELS
-            ---------------------------------- */}
 
             <div
               className="
@@ -433,10 +392,6 @@ export default function SalesOverview() {
           </div>
         )}
 
-        {/* ======================================
-            LEGEND
-        ====================================== */}
-
         <div
           className="
             flex
@@ -448,8 +403,6 @@ export default function SalesOverview() {
             border-[var(--border)]
           "
         >
-          {/* Revenue */}
-
           <div className="flex items-center gap-2 text-xs">
             <span
               className="
@@ -462,8 +415,6 @@ export default function SalesOverview() {
 
             <span>Revenue</span>
           </div>
-
-          {/* Expenses */}
 
           <div
             className="
