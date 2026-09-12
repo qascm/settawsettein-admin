@@ -3,31 +3,39 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import {
+  House,
+  ShoppingBag,
+  Receipt,
+  BarChart3,
+  Settings,
+} from "lucide-react";
+
 const navigation = [
   {
     name: "Home",
     href: "/dashboard",
-    icon: "⌂",
+    icon: House,
   },
   {
     name: "Orders",
     href: "/orders",
-    icon: "▤",
+    icon: ShoppingBag,
   },
   {
     name: "Expenses",
     href: "/expenses",
-    icon: "−",
+    icon: Receipt,
   },
   {
     name: "Reports",
     href: "/reports",
-    icon: "◒",
+    icon: BarChart3,
   },
   {
     name: "Settings",
     href: "/settings",
-    icon: "⚙",
+    icon: Settings,
   },
 ];
 
@@ -42,6 +50,8 @@ export default function Sidebar() {
             pathname === item.href ||
             pathname.startsWith(`${item.href}/`);
 
+          const Icon = item.icon;
+
           return (
             <Link
               key={item.href}
@@ -52,9 +62,10 @@ export default function Sidebar() {
                   : "text-[var(--muted)]"
               }`}
             >
-              <span className="text-lg leading-none">
-                {item.icon}
-              </span>
+              <Icon
+                size={20}
+                strokeWidth={1.8}
+              />
 
               <span className="text-[10px] font-medium">
                 {item.name}
