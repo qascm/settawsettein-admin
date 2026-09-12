@@ -243,10 +243,6 @@ export default function SalesOverview() {
             "
           >
             <span>Last 6 months</span>
-
-            <span className="ml-2 text-sm leading-none">
-              ↘
-            </span>
           </button>
         </div>
 
