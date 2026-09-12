@@ -1,6 +1,8 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
 import {
   House,
   ShoppingBag,
@@ -39,105 +41,36 @@ const navigation = [
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
-
-  const routeIndex = navigation.findIndex(
-    (item) =>
-      pathname === item.href ||
-      pathname.startsWith(`${item.href}/`)
-  );
-
-  const currentIndex = routeIndex >= 0 ? routeIndex : 0;
-
-  const handleNavigation = (href, index) => {
-    if (index === currentIndex) return;
-
-    // Start the blue-box animation first
-    requestAnimationFrame(() => {
-      setTimeout(() => {
-        router.push(href);
-      }, 250);
-    });
-  };
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-3">
-      <div
-        className="
-          relative
-          max-w-md
-          mx-auto
-          h-20
-          rounded-2xl
-          bg-[var(--surface)]
-          border border-[var(--border)]
-          px-2
-          flex
-          items-center
-          justify-between
-          shadow-xl
-          overflow-hidden
-        "
-      >
-        {/* Sliding blue background */}
-        <div
-          className="
-            absolute
-            left-2
-            top-1
-            bottom-1
-            rounded-xl
-            bg-[var(--primary)]
-            pointer-events-none
-            transition-transform
-            duration-300
-            ease-out
-          "
-          style={{
-            width: "calc((100% - 16px) / 5)",
-            transform: `translateX(${currentIndex * 100}%)`,
-          }}
-        />
+      <div className="max-w-md mx-auto h-16 rounded-2xl bg-[var(--surface)] border border-[var(--border)] px-2 flex items-center justify-between shadow-xl">
+        {navigation.map((item) => {
+          const active =
+            pathname === item.href ||
+            pathname.startsWith(`${item.href}/`);
 
-        {navigation.map((item, index) => {
-          const active = currentIndex === index;
           const Icon = item.icon;
 
           return (
-            <button
+            <Link
               key={item.href}
-              onClick={() => handleNavigation(item.href, index)}
-              className={`
-                relative
-                z-10
-                flex-1
-                h-full
-                flex
-                flex-col
-                items-center
-                justify-center
-                gap-1
-                rounded-xl
-                transition-colors
-                duration-200
-                active:scale-95
-                ${
-                  active
-                    ? "text-white"
-                    : "text-[var(--muted)] hover:text-white"
-                }
-              `}
+              href={item.href}
+              className={`flex-1 h-full flex flex-col items-center justify-center gap-1 rounded-xl transition ${
+                active
+                  ? "text-white bg-[var(--primary)]"
+                  : "text-[var(--muted)]"
+              }`}
             >
               <Icon
                 size={20}
                 strokeWidth={1.8}
-                className="transition-transform duration-300 ease-out"
               />
 
               <span className="text-[10px] font-medium">
                 {item.name}
               </span>
-            </button>
+            </Link>
           );
         })}
       </div>
