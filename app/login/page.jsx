@@ -12,8 +12,14 @@ export default function LoginPage() {
   function handleLogin(e) {
     e.preventDefault();
 
-    // Frontend only for now
-    router.push("/dashboard");
+    const ADMIN_EMAIL = "admin@settawsettein.com";
+    const ADMIN_PASSWORD = "qasem66";
+
+    if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+      router.push("/dashboard");
+    } else {
+      alert("Invalid email or password");
+    }
   }
 
   return (
