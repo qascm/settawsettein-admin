@@ -1,0 +1,62 @@
+@import "tailwindcss";
+@import "../assets/fonts/fonts.css";
+
+:root {
+  --background: #0d0d0d;
+  --surface: #171717;
+  --surface-light: #1d1d1d;
+  --border: #292929;
+
+  --foreground: #f5f5f5;
+  --muted: #858585;
+
+  --primary: #4344E3;
+  --primary-dark: #2929cb;
+
+  --success: #4ade80;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Goia", Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+::selection {
+  background: var(--primary);
+  color: white;
+}
+
+/* Hide horizontal scrollbars */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
