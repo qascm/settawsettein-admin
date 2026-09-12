@@ -66,21 +66,22 @@ export default function Sidebar() {
           shadow-xl
         "
       >
-        {/* Sliding active background */}
+        {/* Sliding blue background */}
         <div
           className="
             absolute
+            left-2
             top-0
             bottom-0
-            left-2
             rounded-2xl
             bg-[var(--primary)]
             transition-transform
             duration-300
-            ease-out
+            ease-in-out
+            pointer-events-none
           "
           style={{
-            width: "calc((100% - 1rem) / 5)",
+            width: "calc((100% - 16px) / 5)",
             transform: `translateX(${Math.max(
               activeIndex,
               0
@@ -107,9 +108,8 @@ export default function Sidebar() {
                 justify-center
                 gap-1
                 rounded-xl
-                transition-all
+                transition-colors
                 duration-200
-                ease-out
                 active:scale-95
                 ${
                   active
@@ -121,26 +121,14 @@ export default function Sidebar() {
               <Icon
                 size={20}
                 strokeWidth={1.8}
-                className={`
-                  transition-all
+                className="
+                  transition-transform
                   duration-300
                   ease-out
-                  ${
-                    active
-                      ? "scale-105 -translate-y-0.5"
-                      : "scale-100"
-                  }
-                `}
+                "
               />
 
-              <span
-                className="
-                  text-[10px]
-                  font-medium
-                  transition-all
-                  duration-300
-                "
-              >
+              <span className="text-[10px] font-medium">
                 {item.name}
               </span>
             </Link>
