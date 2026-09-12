@@ -1,8 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-
+import { usePathname, useRouter } from "next/navigation";
 import {
   House,
   ShoppingBag,
@@ -41,14 +39,26 @@ const navigation = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
 
-  const activeIndex = navigation.findIndex(
+  const routeIndex = navigation.findIndex(
     (item) =>
       pathname === item.href ||
       pathname.startsWith(`${item.href}/`)
   );
 
-  const currentIndex = activeIndex >= 0 ? activeIndex : 0;
+  const currentIndex = routeIndex >= 0 ? routeIndex : 0;
+
+  const handleNavigation = (href, index) => {
+    if (index === currentIndex) return;
+
+    // Start the blue-box animation first
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        router.push(href);
+      }, 250);
+    });
+  };
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-3">
@@ -73,15 +83,15 @@ export default function Sidebar() {
         <div
           className="
             absolute
+            left-2
             top-1
             bottom-1
-            left-2
             rounded-xl
             bg-[var(--primary)]
             pointer-events-none
             transition-transform
             duration-300
-            ease-[cubic-bezier(0.4,0,0.2,1)]
+            ease-out
           "
           style={{
             width: "calc((100% - 16px) / 5)",
@@ -94,9 +104,9 @@ export default function Sidebar() {
           const Icon = item.icon;
 
           return (
-            <Link
+            <button
               key={item.href}
-              href={item.href}
+              onClick={() => handleNavigation(item.href, index)}
               className={`
                 relative
                 z-10
@@ -121,17 +131,13 @@ export default function Sidebar() {
               <Icon
                 size={20}
                 strokeWidth={1.8}
-                className="
-                  transition-all
-                  duration-300
-                  ease-out
-                "
+                className="transition-transform duration-300 ease-out"
               />
 
               <span className="text-[10px] font-medium">
                 {item.name}
               </span>
-            </Link>
+            </button>
           );
         })}
       </div>
