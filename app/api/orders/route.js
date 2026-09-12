@@ -1,6 +1,26 @@
 import { NextResponse } from "next/server";
 import { sheets, spreadsheetId } from "@/lib/googleSheets";
 
+function formatDate(date) {
+  if (!date) return "";
+
+  const [year, month, day] = date.split("-");
+
+  return `${day}/${month}/${year}`;
+}
+
+function parseDate(date) {
+  if (!date) return 0;
+
+  const [day, month, year] = date.split("/");
+
+  return new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day)
+  ).getTime();
+}
+
 export async function GET() {
   try {
     const result = await sheets.spreadsheets.values.get({
@@ -24,8 +44,7 @@ export async function GET() {
     }));
 
     orders.sort(
-      (a, b) =>
-        new Date(b.date) - new Date(a.date)
+      (a, b) => parseDate(b.date) - parseDate(a.date)
     );
 
     return NextResponse.json({
@@ -50,7 +69,7 @@ export async function POST(request) {
     const order = await request.json();
 
     const row = [
-      order.date || "",
+      formatDate(order.date),
       order.orderId || "",
       order.customerName || "",
       order.phone || "",
@@ -103,7 +122,6 @@ export async function PUT(request) {
       );
     }
 
-    // Get all orders to find the matching row
     const result = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range: "Orders!A:J",
@@ -111,7 +129,6 @@ export async function PUT(request) {
 
     const rows = result.data.values || [];
 
-    // Find row by Order ID
     const rowIndex = rows.findIndex(
       (row, index) =>
         index > 0 &&
@@ -129,11 +146,10 @@ export async function PUT(request) {
       );
     }
 
-    // Google Sheets rows are 1-based
     const sheetRow = rowIndex + 1;
 
     const updatedRow = [
-      order.date || "",
+      formatDate(order.date),
       order.orderId || "",
       order.customerName || "",
       order.phone || "",

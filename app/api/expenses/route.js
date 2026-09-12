@@ -1,6 +1,26 @@
 import { NextResponse } from "next/server";
 import { sheets, spreadsheetId } from "@/lib/googleSheets";
 
+function formatDate(date) {
+  if (!date) return "";
+
+  const [year, month, day] = date.split("-");
+
+  return `${day}/${month}/${year}`;
+}
+
+function parseDate(date) {
+  if (!date) return 0;
+
+  const [day, month, year] = date.split("/");
+
+  return new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day)
+  ).getTime();
+}
+
 export async function GET() {
   try {
     const result = await sheets.spreadsheets.values.get({
@@ -21,8 +41,7 @@ export async function GET() {
     }));
 
     expenses.sort(
-      (a, b) =>
-        new Date(b.date) - new Date(a.date)
+      (a, b) => parseDate(b.date) - parseDate(a.date)
     );
 
     return NextResponse.json({
@@ -47,7 +66,7 @@ export async function POST(request) {
     const expense = await request.json();
 
     const row = [
-      expense.date || "",
+      formatDate(expense.date),
       expense.expenseId || "",
       expense.description || "",
       expense.category || "",
@@ -124,7 +143,7 @@ export async function PUT(request) {
     const sheetRow = rowIndex + 1;
 
     const updatedRow = [
-      expense.date || "",
+      formatDate(expense.date),
       expense.expenseId || "",
       expense.description || "",
       expense.category || "",
