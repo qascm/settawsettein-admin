@@ -48,6 +48,8 @@ export default function Sidebar() {
       pathname.startsWith(`${item.href}/`)
   );
 
+  const currentIndex = activeIndex >= 0 ? activeIndex : 0;
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 px-3 pb-3">
       <div
@@ -64,33 +66,31 @@ export default function Sidebar() {
           items-center
           justify-between
           shadow-xl
+          overflow-hidden
         "
       >
         {/* Sliding blue background */}
         <div
           className="
             absolute
+            top-1
+            bottom-1
             left-2
-            top-0
-            bottom-0
-            rounded-2xl
+            rounded-xl
             bg-[var(--primary)]
+            pointer-events-none
             transition-transform
             duration-300
-            ease-in-out
-            pointer-events-none
+            ease-[cubic-bezier(0.4,0,0.2,1)]
           "
           style={{
             width: "calc((100% - 16px) / 5)",
-            transform: `translateX(${Math.max(
-              activeIndex,
-              0
-            ) * 100}%)`,
+            transform: `translateX(${currentIndex * 100}%)`,
           }}
         />
 
         {navigation.map((item, index) => {
-          const active = activeIndex === index;
+          const active = currentIndex === index;
           const Icon = item.icon;
 
           return (
@@ -122,7 +122,7 @@ export default function Sidebar() {
                 size={20}
                 strokeWidth={1.8}
                 className="
-                  transition-transform
+                  transition-all
                   duration-300
                   ease-out
                 "
